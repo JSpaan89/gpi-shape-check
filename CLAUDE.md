@@ -10,8 +10,10 @@ Phone app (PWA) that measures dished heads (DIN 28011, DIN 28013), cones with kn
 
 ## Structure
 - `index.html`: the app shell and all CSS.
-- `src/app.js`: UI only. No geometry or image maths here.
+- `src/app.js`: edge test screen, UI only. `src/measure.js`: measure screen, UI only. `src/viewer3d.js`: three.js r128 view.
 - `src/silhouette.js`: edge finder on photos. No DOM, runs in `src/edge-worker.js` and in node.
+- `src/profile.js`: photo outline to (rho, z) in mm and to 3D points for core.js. `src/export3d.js`: coloured PLY for Blender.
+- Always call `SC.analyze` with `scaleMode: 'scale'` on photo points: a free scale fit can collapse on sparse points. Apply a tape circumference before, in measure.js.
 - `src/core.js`: profile models, best-fit, checks, solid, exports, file parsers. Reused unchanged from pilot v0.1.1. Extend it, do not rewrite it.
 - `sw.js`, `manifest.webmanifest`, `icons/`: PWA install and offline cache.
 - `tests/`: node built-in test runner, synthetic data only.

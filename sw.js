@@ -1,9 +1,10 @@
 /* Service worker: makes Shape Check installable and usable without network.
    App files come from the cache first; a new version gets a new cache name. */
-var CACHE = 'shapecheck-v0.2.0';
+var CACHE = 'shapecheck-v0.3.0';
 var ASSETS = [
   './', 'index.html', 'manifest.webmanifest',
   'src/app.js', 'src/silhouette.js', 'src/edge-worker.js', 'src/core.js',
+  'src/profile.js', 'src/export3d.js', 'src/viewer3d.js', 'src/measure.js',
   'icons/logo-gpi-white.png', 'icons/icon-192.png', 'icons/icon-512.png'
 ];
 

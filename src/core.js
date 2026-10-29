@@ -291,8 +291,10 @@ var SC = (function () {
       band[bi].push(Math.hypot(q[3 * i], q[3 * i + 1])); cntBand++;
     }
     if (spec.h1 > 5 && cntBand < 300) { // fall back to knuckle start
+      // a knuckle point says how far the shell is off nominal there: radius = Ro + deviation
+      // (v0.1 subtracted the deviation, which made sparse scans read several mm too small)
       for (i = 0; i < bins; i++) band[i] = [];
-      for (i = 0; i < n; i++) { zz = q[3 * i + 2]; if (zz < -1 || zz > 0.25 * nom.rk || Math.abs(dev[i]) > outlierLim) continue; th = Math.atan2(q[3 * i + 1], q[3 * i]); bi = Math.min(bins - 1, Math.floor((th + PI) / (2 * PI) * bins)); band[bi].push(Math.hypot(q[3 * i], q[3 * i + 1]) - (dev[i] - (Math.hypot(q[3 * i], q[3 * i + 1]) - nom.Ro))); }
+      for (i = 0; i < n; i++) { zz = q[3 * i + 2]; if (zz < -1 || zz > 0.25 * nom.rk || Math.abs(dev[i]) > outlierLim) continue; th = Math.atan2(q[3 * i + 1], q[3 * i]); bi = Math.min(bins - 1, Math.floor((th + PI) / (2 * PI) * bins)); band[bi].push(nom.Ro + dev[i]); }
     }
     var bm = band.map(function (b) { return b.length >= 5 ? median(b) : null; });
     var diams = [];

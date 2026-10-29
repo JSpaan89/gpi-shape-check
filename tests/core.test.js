@@ -73,6 +73,13 @@ test('circumference scale mode takes the diameter from the tape measurement', ()
   assert.equal(d.status, 'pass');
 });
 
+test('a sparse scan with few flange points still gives the right diameter', () => {
+  // 3000 points leave fewer than 300 in the flange band, so the knuckle start is used
+  const pts = SC.sampleScan(DIN11, { n: 3000 });
+  const res = SC.analyze(pts, { spec: DIN11, tol: TOL, scaleMode: 'scale' });
+  near(check(res, 'diameter').measured, 2000, 4, 'diameter from knuckle start');
+});
+
 test('unknown scale leaves diameter and height unchecked', () => {
   const pts = SC.sampleScan(DIN11, { n: 12000 });
   const res = SC.analyze(pts, { spec: DIN11, tol: TOL, scaleMode: 'free' });

@@ -91,7 +91,7 @@ table.log{width:100%;border-collapse:collapse;font-size:12px;min-width:520px}
 table.log th,table.log td{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
 table.log th{font-weight:600;color:var(--muted);background:var(--bg)}
 .empty{color:var(--muted);font-size:13px;margin:4px 0}
-.viewer{position:relative;background:var(--viewer);height:calc(100vh - 56px - 44px);min-height:360px}
+.viewer{position:relative;background:var(--viewer);height:calc(100vh - 56px - 44px - 46px);min-height:360px}
 .viewer canvas{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
 .viewer .vnote{position:absolute;inset:auto 12px 12px 12px;font-size:12.5px;color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:8px 10px}
 .viewer .vtools{position:absolute;top:10px;right:10px;display:flex;gap:6px}
@@ -103,6 +103,20 @@ dialog{border:1px solid var(--line);border-radius:0;background:var(--panel);colo
 dialog::backdrop{background:rgba(0,0,0,.4)}
 dialog h3{margin:0 0 8px;font-size:16px}
 dialog ul{margin:0 0 12px;padding-left:20px;font-size:14px}
+.tabs{display:flex;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:calc(56px + env(safe-area-inset-top,0px));z-index:15}
+.tab{border:0;border-bottom:3px solid transparent;background:none;padding:11px 18px;font-weight:600;font-size:14px;color:var(--muted);cursor:pointer;min-height:44px}
+.tab[aria-selected="true"]{color:var(--teal-dark);border-bottom-color:var(--teal)}
+.viewer .vtools.left{left:10px;right:auto}
+.viewer .btn[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
+.btn.sm{min-height:36px;padding:6px 10px;font-size:13px}
+ul.photos{list-style:none;margin:10px 0 0;padding:0}
+ul.photos li{display:flex;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+ul.photos li.on .pl b{color:var(--teal-dark)}
+ul.photos .pl{flex:1;text-align:left;background:none;border:0;padding:4px 0;cursor:pointer;min-width:0}
+ul.photos .pl span{display:block;font-size:12px;color:var(--muted)}
+.pill{display:inline-block;font-size:11px;font-weight:600;text-transform:uppercase;padding:1px 6px;background:var(--bg);color:var(--muted)}
+.pill.pass{background:var(--pass-bg);color:var(--pass)} .pill.fail{background:var(--fail-bg);color:var(--fail)}
+.exports{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 @media (max-width:900px){
   .app{grid-template-columns:1fr}
   .app > .col:last-child{order:-1}
@@ -115,9 +129,85 @@ dialog ul{margin:0 0 12px;padding-left:20px;font-size:14px}
 <header class="top">
   <div class="logo"><img alt="Gpi Group" src="icons/logo-gpi-white.png"></div>
   <h1>Shape Check</h1><button class="ver" id="ver" type="button" title="Release notes">v0</button>
-  <span class="sp"></span><span class="src">Edge test: can the camera see the steel outline?</span>
+  <span class="sp"></span><span class="src">Measure heads and cones from side photos</span>
 </header>
-<main class="app">
+<nav class="tabs" role="tablist">
+  <button class="tab" type="button" role="tab" data-tab="measure" aria-selected="true">Measure</button>
+  <button class="tab" type="button" role="tab" data-tab="edge" aria-selected="false">Edge test</button>
+</nav>
+<main class="app" id="viewMeasure">
+  <aside class="col">
+    <section class="panel">
+      <div class="ph"><span class="n">1</span><h2>Part</h2></div>
+      <div class="grid2">
+        <label class="f full">Part or project
+          <input id="mPart" type="text" placeholder="e.g. 326096 bottom head"></label>
+        <label class="f">Shape
+          <select id="mType"><option value="din28011">Klöpper DIN 28011</option><option value="din28013">Korbbogen DIN 28013</option><option value="cone">Cone with knuckle</option></select></label>
+        <label class="f">Outside diameter Da (mm)
+          <input id="mDa" type="number" inputmode="decimal" value="2000"></label>
+        <label class="f">Wall thickness s (mm)
+          <input id="mS" type="number" inputmode="decimal" value="5"></label>
+        <label class="f">Straight flange h1 (mm)
+          <input id="mH1" type="number" inputmode="decimal" value="40"></label>
+        <label class="f">Radii given on the
+          <select id="mRef"><option value="inside">Inside</option><option value="outside">Outside</option></select></label>
+        <label class="f">Profile tolerance ± (mm)
+          <input id="mTol" type="number" inputmode="decimal" value="3"></label>
+        <label class="f m-cone">Knuckle radius r (mm)
+          <input id="mR" type="number" inputmode="decimal" value="160"></label>
+        <label class="f m-cone">Cone slope from horizontal (°)
+          <input id="mBeta" type="number" inputmode="decimal" value="30"></label>
+        <label class="f m-cone">Top opening (mm)
+          <input id="mDtop" type="number" inputmode="decimal" value="300"></label>
+      </div>
+      <p class="hint" id="mNom"></p>
+    </section>
+    <section class="panel">
+      <div class="ph"><span class="n">2</span><h2>Photos</h2></div>
+      <div class="row">
+        <label class="btn primary">Take photo<input id="mCam" type="file" accept="image/*" capture="environment"></label>
+        <label class="btn">From gallery<input id="mGal" type="file" accept="image/*" multiple></label>
+      </div>
+      <div class="grid2" style="margin-top:10px">
+        <label class="f">Circumference by tape (mm, best)
+          <input id="mCirc" type="number" inputmode="decimal" placeholder="optional"></label>
+        <label class="f">Ruler length (mm)
+          <input id="mRuler" type="number" inputmode="decimal" value="1000"></label>
+      </div>
+      <ul class="photos" id="mPhotos"></ul>
+      <details class="tips"><summary>How to take the photos</summary><ol>
+        <li>Walk half a turn around the part and take 4 photos: one every 45°, in that order.</li>
+        <li>Same distance each time, phone level, part upright and fully in the picture with background around it.</li>
+        <li>Scale: measure the circumference with a tape (best), or stand a long ruler upright next to the part, level with its axis, and tap its ends on each photo.</li>
+      </ol></details>
+    </section>
+    <section class="panel">
+      <div class="ph"><span class="n">3</span><h2>Result</h2></div>
+      <button class="btn primary" id="mRun" type="button" style="width:100%" disabled>Measure</button>
+      <div id="mResult" style="margin-top:10px"></div>
+      <div class="exports" id="mExports" hidden>
+        <button class="btn" type="button" data-exp="ply">3D for Blender (PLY)</button>
+        <button class="btn" type="button" data-exp="stp">STEP solid</button>
+        <button class="btn" type="button" data-exp="stl">STL solid</button>
+        <button class="btn" type="button" data-exp="pts">STEP points</button>
+        <button class="btn" type="button" data-exp="csv">Deviations CSV</button>
+      </div>
+    </section>
+  </aside>
+  <section class="col">
+    <div class="viewer">
+      <canvas id="mcv" aria-label="Photo with detected outline"></canvas>
+      <canvas id="gl" aria-label="3D view of the measured part" hidden></canvas>
+      <div class="vtools left"><button class="btn sm" type="button" data-mview="photo">Photo</button><button class="btn sm" type="button" data-mview="3d">3D</button></div>
+      <div class="vnote" id="mNote"></div>
+    </div>
+    <div class="panel legend">
+      <span><i style="background:#2B59C3"></i>Inside nominal</span><span><i style="background:#3BB273"></i>Within tolerance</span><span><i style="background:#D7263D"></i>Outside nominal</span>
+    </div>
+  </section>
+</main>
+<main class="app" id="viewEdge" hidden>
   <aside class="col">
     <section class="panel">
       <div class="ph"><span class="n">1</span><h2>Photo</h2></div>
@@ -178,7 +268,14 @@ dialog ul{margin:0 0 12px;padding-left:20px;font-size:14px}
   <div id="notesBody"></div>
   <button class="btn primary" id="notesClose" type="button">Close</button>
 </dialog>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="src/core.js"></script>
 <script src="src/silhouette.js"></script>
+<script src="src/profile.js"></script>
+<script src="src/export3d.js"></script>
+<script src="src/viewer3d.js"></script>
 <script src="src/app.js"></script>
+<script src="src/measure.js"></script>
 </body>
 </html>

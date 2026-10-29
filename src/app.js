@@ -1,7 +1,8 @@
 (function () {
   'use strict';
-  var VERSION = 'v0.2.0';
+  var VERSION = 'v0.3.0';
   var RELEASE_NOTES = [
+    ['v0.3.0', ['Measure tab: 4 to 8 side photos of a head or cone give the profile, diameters and out of roundness, checked against DIN 28011, DIN 28013 or a cone.', 'Scale from a tape circumference, a ruler next to the part, or none (shape only).', '3D view coloured by deviation, and exports: PLY for Blender with colours, STEP solid, STL, STEP points, CSV.', 'Fixed: diameter read a few mm too small on sparse scans.']],
     ['v0.2.0', ['Edge test: take a photo of a part and see whether the steel outline is found.', 'Drag a box on the photo to limit the search.', 'Test log with CSV download to compare backgrounds and finishes.', 'Installable as an app on the phone.']]
   ];
   var MAX_SIDE = 4096;            // longest photo side processed, keeps a 12 MP photo at full detail
@@ -215,6 +216,7 @@
     window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () { /* app still works online */ }); });
   }
 
+  window.SCApp = { toast: toast }; // shared with the measure screen
   $('cam').addEventListener('change', onFile);
   $('gal').addEventListener('change', onFile);
   $('da').addEventListener('input', function () { if (state.res) renderResult(); });
