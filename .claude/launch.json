@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "gpi-shape-check", "runtimeExecutable": "node", "runtimeArgs": ["scripts/serve.js", "8794"], "port": 8794 }
+  ]
+}

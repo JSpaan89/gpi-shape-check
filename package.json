@@ -1,0 +1,14 @@
+{
+  "name": "gpi-shape-check",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Gpi Shape Check: measure dished heads and cones with the phone camera, check against DIN 28011, DIN 28013, EN 13445-4 and Gpi tolerances, export to STEP and STL.",
+  "scripts": {
+    "test": "node --test \"tests/*.test.js\"",
+    "coverage": "node --test --experimental-test-coverage --test-coverage-include=src/core.js --test-coverage-include=src/silhouette.js \"tests/*.test.js\"",
+    "serve": "node scripts/serve.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

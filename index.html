@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Gpi Shape Check</title>
+<meta name="theme-color" content="#00B3A0">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sofia+Sans:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: on wide screens two columns (controls and test log | photo with detected edges), one column on a phone.
+   Gpi Group style from FloorScan and pilot v0.1: teal, Sofia Sans, sharp corners. */
+:root{
+  --teal:#00B3A0; --teal-dark:#008273; --teal-light:#E5F6F3;
+  --ink:#211F26; --charcoal:#413F37;
+  --bg:#F4F6F6; --panel:#FFFFFF; --line:#DCE3E2; --muted:#5E6B69; --field:#FFFFFF; --viewer:#EEF2F2;
+  --pass:#1E8E5A; --pass-bg:#E3F4EA; --fail:#C62F3B; --fail-bg:#FBE6E8; --warn:#B7791F; --warn-bg:#FDF3E1;
+  --f-body:'Sofia Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  --radius:0px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --teal:#1FC7B3; --teal-dark:#5FD9CA; --teal-light:#123B37;
+  --ink:#ECEFF0; --charcoal:#C9CFCE;
+  --bg:#15181A; --panel:#1E2224; --line:#30373A; --muted:#97A3A1; --field:#171B1D; --viewer:#101315;
+  --pass:#4CC48A; --pass-bg:#173326; --fail:#F0707A; --fail-bg:#3A1C20; --warn:#E3B05A; --warn-bg:#3A2E18;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --teal:#1FC7B3; --teal-dark:#5FD9CA; --teal-light:#123B37;
+  --ink:#ECEFF0; --charcoal:#C9CFCE;
+  --bg:#15181A; --panel:#1E2224; --line:#30373A; --muted:#97A3A1; --field:#171B1D; --viewer:#101315;
+  --pass:#4CC48A; --pass-bg:#173326; --fail:#F0707A; --fail-bg:#3A1C20; --warn:#E3B05A; --warn-bg:#3A2E18;
+  color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font-family:var(--f-body);font-weight:300;font-size:15px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:#00B3A0}
+button,input,select,textarea{font:inherit;color:inherit}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;align-items:center;gap:14px;background:#211F26;color:#fff;
+  padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));min-height:56px}
+.logo{background:#00B3A0;height:56px;display:flex;align-items:center;padding:0 14px;flex:none}
+.logo img{height:30px;width:auto;display:block}
+.top h1{font-size:19px;font-weight:600;margin:0;color:#fff;white-space:nowrap}
+.ver{font-family:var(--f-mono);font-size:11px;padding:2px 6px;border:1px solid rgba(255,255,255,.35);color:#cfe;background:none;cursor:pointer;white-space:nowrap}
+.top .sp{flex:1}
+.top .src{font-size:12.5px;color:#cfd8d6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.app{display:grid;grid-template-columns:minmax(320px,420px) minmax(0,1fr);gap:1px;background:var(--line);min-height:calc(100vh - 56px)}
+.col{background:var(--bg);min-width:0}
+.panel{background:var(--panel);padding:14px 16px;border-bottom:1px solid var(--line)}
+.ph{display:flex;align-items:baseline;gap:10px;margin:0 0 10px}
+.ph .n{font-family:var(--f-mono);font-size:12px;color:#fff;background:var(--teal-dark);padding:1px 6px}
+.ph h2{font-size:15px;font-weight:700;margin:0;text-transform:uppercase;letter-spacing:.06em}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+.full{grid-column:1/-1}
+label.f{display:block;font-size:12.5px;color:var(--muted);min-width:0}
+label.f input,label.f select,label.f textarea{display:block;margin-top:3px}
+input[type=text],input[type=number],select,textarea{width:100%;min-width:0;background:var(--field);border:1px solid var(--line);border-radius:var(--radius);padding:8px 9px;font-size:15px;font-weight:400}
+textarea{min-height:56px;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,label.btn:focus-within{outline:2px solid var(--teal);outline-offset:1px}
+.hint{font-size:12px;color:var(--muted);margin:6px 0 0}
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--teal-dark);background:transparent;color:var(--teal-dark);padding:10px 14px;cursor:pointer;font-weight:600;border-radius:var(--radius);font-size:14px;min-height:44px}
+.btn:hover{background:var(--teal-light)}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:#fff}
+.btn.primary:hover{background:var(--teal-dark);border-color:var(--teal-dark)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row .btn{flex:1 1 140px}
+details.tips{margin-top:10px;font-size:13px}
+details.tips summary{cursor:pointer;color:var(--teal-dark);font-weight:600}
+details.tips ol{margin:8px 0 0;padding-left:20px}
+details.tips li{margin:3px 0}
+.progress{height:4px;background:var(--line);margin-top:10px;overflow:hidden}
+.progress i{display:block;height:100%;width:0;background:var(--teal);transition:width .2s}
+.pmsg{font-size:12px;color:var(--muted);margin-top:4px;min-height:16px}
+.verdict{padding:12px 14px;border-left:4px solid var(--muted);background:var(--bg);margin-bottom:10px}
+.verdict .big{font-size:22px;font-weight:700;letter-spacing:.04em}
+.verdict .sub{font-size:13px;color:var(--muted)}
+.verdict.usable{border-color:var(--pass);background:var(--pass-bg)} .verdict.usable .big{color:var(--pass)}
+.verdict.doubtful{border-color:var(--warn);background:var(--warn-bg)} .verdict.doubtful .big{color:var(--warn)}
+.verdict.notusable{border-color:var(--fail);background:var(--fail-bg)} .verdict.notusable .big{color:var(--fail)}
+table.st{width:100%;border-collapse:collapse;font-size:13px}
+table.st td{padding:5px 0;border-bottom:1px solid var(--line);vertical-align:top}
+table.st td:last-child{text-align:right;font-family:var(--f-mono);font-size:12.5px;white-space:nowrap;padding-left:10px}
+.logwrap{overflow-x:auto}
+table.log{width:100%;border-collapse:collapse;font-size:12px;min-width:520px}
+table.log th,table.log td{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+table.log th{font-weight:600;color:var(--muted);background:var(--bg)}
+.empty{color:var(--muted);font-size:13px;margin:4px 0}
+.viewer{position:relative;background:var(--viewer);height:calc(100vh - 56px - 44px);min-height:360px}
+.viewer canvas{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
+.viewer .vnote{position:absolute;inset:auto 12px 12px 12px;font-size:12.5px;color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:8px 10px}
+.viewer .vtools{position:absolute;top:10px;right:10px;display:flex;gap:6px}
+.viewer .vtools .btn{background:var(--panel);min-height:36px;padding:6px 10px;font-size:13px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);padding-block:10px}
+.legend i{display:inline-block;width:10px;height:10px;margin-right:5px;vertical-align:-1px}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#211F26;color:#fff;padding:10px 14px;font-size:14px;z-index:40;max-width:calc(100vw - 32px)}
+dialog{border:1px solid var(--line);border-radius:0;background:var(--panel);color:var(--ink);max-width:560px;width:calc(100vw - 32px);padding:16px}
+dialog::backdrop{background:rgba(0,0,0,.4)}
+dialog h3{margin:0 0 8px;font-size:16px}
+dialog ul{margin:0 0 12px;padding-left:20px;font-size:14px}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .app > .col:last-child{order:-1}
+  .viewer{height:58vh}
+  .top .src{display:none}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo"><img alt="Gpi Group" src="icons/logo-gpi-white.png"></div>
+  <h1>Shape Check</h1><button class="ver" id="ver" type="button" title="Release notes">v0</button>
+  <span class="sp"></span><span class="src">Edge test: can the camera see the steel outline?</span>
+</header>
+<main class="app">
+  <aside class="col">
+    <section class="panel">
+      <div class="ph"><span class="n">1</span><h2>Photo</h2></div>
+      <div class="row">
+        <label class="btn primary">Take photo<input id="cam" type="file" accept="image/*" capture="environment"></label>
+        <label class="btn">From gallery<input id="gal" type="file" accept="image/*"></label>
+      </div>
+      <div class="progress"><i id="pbar"></i></div>
+      <div class="pmsg" id="pmsg"></div>
+      <div class="grid2" style="margin-top:8px">
+        <label class="f">Background
+          <select id="bg"><option value="plain-light">Plain, light</option><option value="plain-dark">Plain, dark</option><option value="striped">Striped</option><option value="backlit">Backlit</option><option value="hall">Hall, no backdrop</option></select></label>
+        <label class="f">Stage
+          <select id="stage"><option value="incoming">Incoming</option><option value="welded">Welded to shell</option><option value="final">Final check</option></select></label>
+        <label class="f">Outside diameter Da (mm, optional)
+          <input id="da" type="number" inputmode="decimal" min="0" step="1" placeholder="e.g. 2000"></label>
+        <label class="f">Finish
+          <select id="finish"><option value="2B">2B</option><option value="brushed">Brushed</option><option value="polished">Polished</option><option value="other">Other</option></select></label>
+        <label class="f full">Notes
+          <textarea id="notes" placeholder="Part, light, distance"></textarea></label>
+      </div>
+      <details class="tips"><summary>How to take the photo</summary><ol>
+        <li>Stand square to the part, phone level, head axis upright in the picture.</li>
+        <li>Keep background visible all around the outline.</li>
+        <li>Drag a box around the part on the photo to limit the search.</li>
+        <li>Try the same part against different backgrounds and add each result to the log.</li>
+      </ol></details>
+    </section>
+    <section class="panel">
+      <div class="ph"><span class="n">2</span><h2>Edge result</h2></div>
+      <div id="result"><p class="empty">Take or choose a photo of a part.</p></div>
+    </section>
+    <section class="panel">
+      <div class="ph"><span class="n">3</span><h2>Test log</h2></div>
+      <div class="row" style="margin-bottom:8px">
+        <button class="btn" id="addLog" type="button" disabled>Add to log</button>
+        <button class="btn" id="csvLog" type="button">Download CSV</button>
+        <button class="btn" id="clearLog" type="button">Clear log</button>
+      </div>
+      <div class="logwrap" id="log"></div>
+      <p class="hint">The log stays on this phone only.</p>
+    </section>
+  </aside>
+  <section class="col">
+    <div class="viewer">
+      <canvas id="cv" aria-label="Photo with detected edges"></canvas>
+      <div class="vtools"><button class="btn" id="resetRoi" type="button" disabled>Reset box</button></div>
+      <div class="vnote" id="vnote">No photo yet. The detected outline is drawn on the photo.</div>
+    </div>
+    <div class="panel legend">
+      <span><i style="background:#00B3A0"></i>Side edges</span><span><i style="background:#F2A33A"></i>Top edge</span><span><i style="background:#2B59C3"></i>Search box</span>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast" hidden></div>
+<dialog id="notesDlg">
+  <h3>Release notes</h3>
+  <div id="notesBody"></div>
+  <button class="btn primary" id="notesClose" type="button">Close</button>
+</dialog>
+<script src="src/silhouette.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
